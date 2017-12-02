@@ -12,19 +12,17 @@ import (
 )
 
 // atoi converts a slice of strings to ints
-func atoi(s []string) []int {
-	r := make([]int, len(s))
-
-	for i, c := range s {
-		r[i], _ = strconv.Atoi(c)
+func atoi(s []string) (r []int) {
+	for _, c := range s {
+		i, _ := strconv.Atoi(c)
+		r = append(r, i)
 	}
-	return r
+	return
 }
 
 // uncaptcha returns the sum of all digits that match the next digit in
 // the circular list (loops from end to start)
-func uncaptcha(s string) int {
-	sum := 0
+func uncaptcha(s string) (sum int) {
 	d := atoi(strings.Split(s, ""))
 	l := len(d)
 	offset := 1
@@ -37,7 +35,7 @@ func uncaptcha(s string) int {
 			sum += cur
 		}
 	}
-	return sum
+	return
 }
 
 func main() {

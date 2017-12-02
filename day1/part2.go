@@ -11,31 +11,39 @@ import (
 	"strings"
 )
 
+// atoi converts a slice of strings to ints
+func atoi(s []string) []int {
+	r := make([]int, len(s))
+
+	for i, c := range s {
+		r[i], _ = strconv.Atoi(c)
+	}
+	return r
+}
+
 // uncaptcha returns the sum of all digits that match the opposite digit in
 // the circular list (loops from end to start)
 func uncaptcha(s string) int {
 	sum := 0
-	d := strings.Split(s, "")
+	d := atoi(strings.Split(s, ""))
 	l := len(d)
+	offset := l / 2
 
 	for i := range d {
-		cur, _ := strconv.Atoi(d[i])
-		next, _ := strconv.Atoi(d[(i+l/2)%l])
+		cur := d[i]
+		next := d[(i+offset)%l]
 
 		if cur == next {
 			sum += cur
 		}
 	}
-
 	return sum
 }
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
+
 	for scanner.Scan() {
 		fmt.Println(uncaptcha(scanner.Text()))
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
 }

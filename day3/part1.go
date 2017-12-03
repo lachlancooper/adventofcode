@@ -10,8 +10,14 @@ import (
 	"strconv"
 )
 
+// abs finds the absolute value of an int
+func abs(i int) int {
+	return int(math.Abs(float64(i)))
+}
+
 // manhattan returns the distance from the given square
-// to the centre of a spiral pattern:
+// to the centre square of a spiral pattern:
+//
 // 37  36  35  34  33  32  31
 // 38  17  16  15  14  13  30
 // 39  18   5   4   3  12  29
@@ -26,27 +32,35 @@ func manhattan(s int) int {
 
 	ceilsqrt := int(math.Ceil(math.Sqrt(float64(s))))
 	nextoddpowroot := ceilsqrt + (1 - ceilsqrt%2)
-	//	fmt.Println("nextoddpowroot =", nextoddpowroot)
 
 	prevoddpowroot := nextoddpowroot - 2
 	layer := nextoddpowroot / 2
-	//	fmt.Println("layer =", layer)
 
 	sizeofedge := layer * 2
-	//	fmt.Println("sizeofedge =", sizeofedge)
 
 	prevoddpow := int(math.Pow(float64(prevoddpowroot), 2))
+
+	// which edge is the given square on?
+	// edges are numbered 0123 for ENWS
+	//
+	//  1   1   1   1   1   1   0
+	//  2   1   1   1   1   0   0
+	//  2   2   1   1   0   0   0
+	//  2   2   2   x   0   0   0
+	//  2   2   2   3   3   0   0
+	//  2   2   3   3   3   3   0
+	//  2   3   3   3   3   3   3
 	edge := (s - prevoddpow - 1) / sizeofedge
-	//	fmt.Println("edge =", edge)
 
-	centreofedge := prevoddpow + edge*sizeofedge + sizeofedge/2
-	//	fmt.Println("centreofedge =", centreofedge)
+	// find centre square of current edge
+	centreofedge := prevoddpow + edge*sizeofedge + layer
+	// refactoring
+	// centreofedge := s + layer - 1
 
-	stepstocentreofedge := int(math.Abs(float64(s - centreofedge)))
-
-	// move to "centre" of current edge
-	// then directly to centre of grid (== layer)
-	return stepstocentreofedge + layer
+	fmt.Println("s =", s, "layer =", layer, "centreofedge =", centreofedge)
+	// move to centre of current edge
+	// then directly to centre of grid, 1 step per layer
+	return abs(s-centreofedge) + layer
 }
 
 func main() {

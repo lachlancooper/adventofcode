@@ -10,9 +10,17 @@ import (
 	"strconv"
 )
 
-// abs finds the absolute value of an int
+// abs returns the absolute value of i
 func abs(i int) int {
-	return int(math.Abs(float64(i)))
+	if i < 0 {
+		return -i
+	}
+	return i
+}
+
+// sqr returns i raised to the power of 2
+func sqr(i int) int {
+	return i * i
 }
 
 // manhattan returns the distance from the given square
@@ -30,37 +38,33 @@ func manhattan(s int) int {
 		return 0
 	}
 
-	ceilsqrt := int(math.Ceil(math.Sqrt(float64(s))))
-	nextoddpowroot := ceilsqrt + (1 - ceilsqrt%2)
+	// layer is absolute distance from grid centre
+	//  2- 9: 1
+	// 10-25: 2
+	// 26-49: 3
+	// 50-81: 4
+	layer := int(math.Ceil(math.Sqrt(float64(s)))) / 2
 
-	prevoddpowroot := nextoddpowroot - 2
-	layer := nextoddpowroot / 2
+	// layerstart is number of first square of current layer
+	//  2- 9: 2
+	// 10-25:10
+	// 26-49:26
+	// 50-81:50
+	layerstart := sqr(layer*2-1+layer%2) + 1
 
-	sizeofedge := layer * 2
+	// edgelen is number of squares on each edge of current layer
+	edgelen := layer * 2
 
-	prevoddpow := int(math.Pow(float64(prevoddpowroot), 2))
+	edgecentre := (layerstart - 1) + (s-layerstart)/edgelen*edgelen + edgelen/2
 
-	// which edge is the given square on?
-	// edges are numbered 0123 for ENWS
-	//
-	//  1   1   1   1   1   1   0
-	//  2   1   1   1   1   0   0
-	//  2   2   1   1   0   0   0
-	//  2   2   2   x   0   0   0
-	//  2   2   2   3   3   0   0
-	//  2   2   3   3   3   3   0
-	//  2   3   3   3   3   3   3
-	edge := (s - prevoddpow - 1) / sizeofedge
+	// first, move along edge to centre square
+	//dist := abs((s-layerstart)%(edgelen) + 1 - layer)
+	dist := abs(s - edgecentre)
+	fmt.Println("Square", s, "is in layer", layer, "which started at", layerstart, ". It takes", dist, "steps to centre of edge (", (s-layerstart)/edgelen, edgecentre, "), then", layer, "steps to grid centre.")
 
-	// find centre square of current edge
-	centreofedge := prevoddpow + edge*sizeofedge + layer
-	// refactoring
-	// centreofedge := s + layer - 1
-
-	fmt.Println("s =", s, "layer =", layer, "centreofedge =", centreofedge)
-	// move to centre of current edge
-	// then directly to centre of grid, 1 step per layer
-	return abs(s-centreofedge) + layer
+	// then move inward to grid centre, 1 step per layer
+	dist += layer
+	return dist
 }
 
 func main() {

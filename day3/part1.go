@@ -24,8 +24,6 @@ func manhattan(s int) int {
 		return 0
 	}
 
-	//	fmt.Println("s =", s)
-
 	ceilsqrt := int(math.Ceil(math.Sqrt(float64(s))))
 	nextoddpowroot := ceilsqrt + (1 - ceilsqrt%2)
 	//	fmt.Println("nextoddpowroot =", nextoddpowroot)
@@ -44,17 +42,11 @@ func manhattan(s int) int {
 	centreofedge := prevoddpow + edge*sizeofedge + sizeofedge/2
 	//	fmt.Println("centreofedge =", centreofedge)
 
-	//	fmt.Println()
+	stepstocentreofedge := int(math.Abs(float64(s - centreofedge)))
 
-	switch {
-	case s > centreofedge:
-		return 1 + manhattan(s-1)
-	case s < centreofedge:
-		return 1 + manhattan(s+1)
-	// case s == centreofedge:
-	default:
-		return layer
-	}
+	// move to "centre" of current edge
+	// then directly to centre of grid (== layer)
+	return stepstocentreofedge + layer
 }
 
 func main() {
@@ -65,37 +57,3 @@ func main() {
 		fmt.Println(manhattan(square))
 	}
 }
-
-/*
-layer 0: 1
-layer 1: 2-9
-	edge 0: 2-3
-	edge 1: 4-5
-	edge 2: 6-7
-	edge 3: 8-9
-layer 2: 10-25
-	edge 0: 10-13
-	edge 1: 14-17
-	edge 2: 18-21
-	edge 3: 22-25
-layer 3: 26-49
-	size 24
-layer 4: 50-81
-	size 32
-
-layer number is
-	sqrt(next odd power)-2
-
-size of each layer is
-	8 * (layer number)
-
-cases for position in layer
-bottom right:
-right: sub
-top right:
-top:
-top left:
-left:
-bottom left:
-bottom:
-*/

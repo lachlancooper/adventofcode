@@ -9,81 +9,71 @@ import (
 	"strings"
 )
 
-// compass is an ordered ring of named directions
-var directions = []string{"n", "ne", "se", "s", "sw", "nw"}
-var axes = len(directions) / 2
-
-// compass maps directions to natural numbers
-var compass map[string]int
-
-func init() {
-	compass = make(map[string]int)
-	for i, v := range directions {
-		compass[v] = i
-	}
-}
-
-// opposite returns the opposing direction of s
-func opposite(s string) string {
-	opp := (compass[s] + axes) % len(directions)
-	return directions[opp]
-}
-
-// min returns the smallest opposed entry in t
-func min(t map[string]int) (minkey string, minval int) {
-	minval = 1 << 62
-
-	for k, v := range t {
-		_, opp := t[opposite(k)]
-		if opp && v < minval {
-			minkey = k
-			minval = v
-		}
-	}
-	return
+var compass = map[string]int{
+	"n":  0,
+	"ne": 1,
+	"se": 2,
+	"s":  3,
+	"sw": 4,
+	"nw": 5,
 }
 
 // distance returns number of steps from start
-func distance(t map[string]int) (d int) {
-	for _, v := range t {
-		d += v
+// requires a squashed path p
+func distance(p []int) (dist int) {
+	for _, v := range p {
+		dist += v
 	}
 	return
 }
 
-// normalise cancels out redundant directions in t
-func normalise(t map[string]int) map[string]int {
-	for {
-		k, v := min(t)
-		if k == "" {
-			break
+// squash eliminates all redundancies in p
+func squash(p []int) []int {
+	for this := range p {
+		if p[this] == 0 {
+			continue
 		}
 
-		// normalise
-		o := opposite(k)
-		t[o] -= v
-		if t[o] == 0 {
-			delete(t, o)
+		// TODO: fix hard-coded assumption
+		oppo := (this + 3) % len(p)
+		switch {
+		case p[oppo] == 0: //do nothing
+		case p[oppo] >= p[this]:
+			p[oppo] -= p[this]
+			p[this] = 0
+			continue
+		case p[oppo] < p[this]:
+			p[this] -= p[oppo]
+			p[oppo] = 0
 		}
-		delete(t, k)
 
-		if len(t) <= axes {
-			break
+		// TODO: fix hard-coded assumption
+		diag := (this + 2) % len(p)
+		next := (this + 1) % len(p)
+		switch {
+		case p[diag] == 0: //do nothing
+		case p[diag] >= p[this]:
+			p[diag] -= p[this]
+			p[next] += p[this]
+			p[this] = 0
+		case p[diag] < p[this]:
+			p[this] -= p[diag]
+			p[next] += p[diag]
+			p[diag] = 0
 		}
 	}
-	return t
+	return p
 }
 
 // traverse p and tally directions
-func traverse(p []string) map[string]int {
-	t := make(map[string]int)
+func traverse(p []string) []int {
+	t := make([]int, len(compass))
 
-	// tally
-	for _, i := range p {
-		t[i]++
-		t = normalise(t)
+	for _, d := range p {
+		t[compass[d]]++
+		t = squash(t)
 	}
-	return normalise(t)
+	return t
 }
 
 func main() {
@@ -93,6 +83,6 @@ func main() {
 		path := strings.Split(scanner.Text(), ",")
 
 		end := traverse(path)
-		fmt.Println(end)
+		fmt.Println(distance(end))
 	}
 }

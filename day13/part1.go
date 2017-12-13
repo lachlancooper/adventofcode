@@ -1,5 +1,9 @@
 // http://adventofcode.com/2017/day/13
 // part 1
+//
+// caught iff layer % (depth*2-2)==0
+// (layer 0 always catches but no severity)
+// (layer 1 never catches, assuming range > 1)
 package main
 
 import (

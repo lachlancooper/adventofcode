@@ -1,5 +1,8 @@
 // http://adventofcode.com/2017/day/13
 // part 2
+//
+// caught iff you meet a scanner on its cycle, i.e.
+// your arrival (layer + delay) % depth*2-2 == 0
 package main
 
 import (

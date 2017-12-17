@@ -10,17 +10,6 @@ import (
 	"strings"
 )
 
-// naive solution is way too slow
-// 2.5s for 1000 dances, ~29 days for 1B dances
-// all dances are identical, so all we really care
-// about is the start and end
-
-// build a mapping from start to end and apply that
-// in a single operation
-
-// still won't be efficient, but only in the region of
-// 1B things to process rather than 10T+
-
 func spin(dance string, d int) string {
 	return dance[len(dance)-d:] + dance[:len(dance)-d]
 }
@@ -75,11 +64,22 @@ func main() {
 		line := scanner.Text()
 		dance := "abcdefghijklmnop"
 
-		for i := 0; i < 37; i++ {
-			fmt.Println(i, dance)
+		rounds := []string{dance}
+		seen := make(map[string]bool)
+		seen[dance] = true
+
+		for i := 0; ; i++ {
 			dance = round(dance, strings.Split(line, ","))
+
+			if seen[dance] {
+				break
+			}
+
+			seen[dance] = true
+			rounds = append(rounds, dance)
 		}
-		fmt.Println(37, dance)
-		fmt.Println((1000 * 1000 * 1000) % 36)
+
+		offset := (1000 * 1000 * 1000) % len(rounds)
+		fmt.Println(rounds[offset])
 	}
 }

@@ -20,41 +20,42 @@ var ins = make([][]string, 0)
 func run() {
 	var sound int
 
-outer:
 	for pc := 0; pc < len(ins); pc++ {
 		// fetch
 		i := ins[pc]
+		op := i[0]
+		dst := i[1]
 
-		// collect operand
-		var value int
-		if len(i) == 3 {
-			if v, err := strconv.Atoi(i[2]); err == nil {
-				value = v
+		// decode operand values
+		val := make([]int, 0)
+		for _, c := range i[1:] {
+			if v, err := strconv.Atoi(c); err == nil {
+				val = append(val, v)
 			} else {
-				value = reg[i[2]]
+				val = append(val, reg[c])
 			}
 		}
 
 		// execute
-		switch i[0] {
+		switch op {
 		case "snd":
-			sound = reg[i[1]]
+			sound = val[0]
 		case "set":
-			reg[i[1]] = value
+			reg[dst] = val[1]
 		case "add":
-			reg[i[1]] += value
+			reg[dst] += val[1]
 		case "mul":
-			reg[i[1]] *= value
+			reg[dst] *= val[1]
 		case "mod":
-			reg[i[1]] %= value
+			reg[dst] %= val[1]
 		case "rcv":
-			if reg[i[1]] != 0 {
+			if reg[dst] != 0 {
 				fmt.Println(sound)
-				break outer
+				return
 			}
 		case "jgz":
-			if reg[i[1]] > 0 {
-				pc += value - 1
+			if val[0] > 0 {
+				pc += val[1] - 1
 			}
 		}
 	}

@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 )
 
 func main() {
@@ -12,7 +11,7 @@ func main() {
 
 	for b := 109300; b <= 126300; b += 17 {
 	loop2:
-		for d := 2; d <= int(math.Sqrt(float64(b))); d++ {
+		for d := 2; d <= b; d++ {
 			for e := 2; e <= b/d; e++ {
 				if d*e == b {
 					h++

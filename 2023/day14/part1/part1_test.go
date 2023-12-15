@@ -12,7 +12,7 @@ func Test_solve(t *testing.T) {
 		want    int
 	}{
 		"example": {want: 136},
-		// "input":   {want: 6935},
+		"input":   {want: 102497},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {

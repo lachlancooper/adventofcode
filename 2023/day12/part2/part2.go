@@ -37,92 +37,85 @@ func solve(scanner *bufio.Scanner) int {
 		expected = append(expected, expectedVals...)
 		expected = append(expected, expectedVals...)
 
-		total += arrangements(springs, expected)
+		clear(seenSprings)
+		findArrangements(springs, expected)
+		total += countArrangments()
 	}
 
 	return total
 }
 
-// new strategy:
-// go through ??? finding and adding each expected group, in order
-//
-// ???.### 1,1,3
-// start with first 1
-// #.?.### place it at the first available ?, then next must be .
-// move to next 1
-// #.#.### place it at the first available ?
-// we have no more ?, so test this out, it's valid
-//
-// ???? 1,1
-// #.?? start with first 1, place it at first available ?, with following .
-// #.#. move to next 1, place it at next available ?, with following .
-// test, it's valid, +1
-// #..# move to previous step and try other available ?, it's valid, +1
-// .#.? move to first step, place at next available ?, with .
-// .#.# place second 1, it's valid, +1
-// ..#. move to previous step
+var seenSprings = make(map[string]bool)
 
-// arrangements counts the number of valid arrangements of springs in the given input.
-func arrangements(input string, expected []int) int {
+func countArrangments() int {
 	total := 0
-
-	// fmt.Printf("%100s %v\n", input, expected)
-
-	// we don't want more springs,
-	if len(expected) == 0 && !strings.Contains(input, "#") {
-		// fmt.Printf("%s was valid!\n", input)
-		return 1
+	for _, valid := range seenSprings {
+		if valid {
+			total++
+		}
 	}
-
-	// advance input char by char
-	for i := 0; i < len(input); i++ {
-		variant := input[i:]
-
-		need := sum(expected)
-		have := strings.Count(variant, "#")
-		// we need more springs than is possible in our remaining space, bail out
-		if need > have+strings.Count(variant, "?") {
-			break
-		}
-
-		// we need less springs than is possible, bail out
-		if need < have {
-			break
-		}
-
-		// skip over initially empty cells
-		if variant[0] == '.' {
-			continue
-		}
-
-		// try to place first value
-		val := expected[0]
-		result, ok := place(variant, val)
-		if !ok {
-			// we can't place the val here, this variant has failed, move to the next
-			continue
-		}
-
-		// if it succeeds, recurse with next expected val and trimmed variant string
-		// trim 'val' springs off the next variant
-		newInput := result[val:]
-		// remove 'val' from expected list
-		newExpected := expected[1:]
-
-		// recurse, with new variant and expected
-		total += arrangements(newInput, newExpected)
-	}
-
 	return total
+}
+
+// findArrangements counts the number of valid findArrangements of springs in the given input.
+func findArrangements(input string, expected []int) {
+	if seenSprings[input] {
+		return
+	}
+
+	need := sum(expected)
+	remaining := strings.Count(input, "#")
+	possible := strings.Count(input, "?")
+
+	// we don't want more springs, so we have a valid arrangement
+	if need == 0 && remaining == 0 {
+		fmt.Printf("%s IS VALID!\n", input)
+		seenSprings[input] = true
+		return
+	}
+
+	// we need more springs than is possible in our remaining space, bail out
+	if need > remaining+possible {
+		fmt.Printf("%s lacks springs, bailing.\n", input)
+		seenSprings[input] = false
+		return
+	}
+
+	// we need less springs than is possible, bail out
+	if need < remaining {
+		fmt.Printf("%s has too many springs, bailing.\n", input)
+		seenSprings[input] = false
+		return
+	}
+
+	// fmt.Printf("%s %v\n", input, expected)
+	// try to place first value
+	fmt.Printf("%s - place %d ", input, expected[0])
+	result, ok := place(input, expected[0])
+	if ok {
+		fmt.Printf("succeeded\n")
+		// if we placed it, continue down this new path
+		findArrangements(result, expected[1:])
+	} else {
+		fmt.Printf("failed, moving to next variant.\n")
+	}
+
+	// either way, also continue down the other path; flip the next '?'
+	if possible > 0 {
+		variant := strings.Replace(input, "?", ".", 1)
+		findArrangements(variant, expected)
+	}
+
+	return
 }
 
 // place tries to place a group of springs of size val as far left as possible in the input spring.
-// If this is not possible, returns false.
+// Converts placed springs to '*' characters.
 // Placement is greedy, so the left-most ? will be used for a #.
-// If this fails, we'll move on to the next spring at a higher level anyway.
+// If placement is not possible at the left-most ?, returns false.
 func place(input string, expect int) (string, bool) {
 	var result string
-	foundGroup := 0
+	placed := 0
 	i := 0
 
 	for _, char := range input {
@@ -131,24 +124,31 @@ func place(input string, expect int) (string, bool) {
 		switch char {
 		case '.':
 			// we had already started a group, now it's ended too early
-			if foundGroup > 0 {
+			if placed > 0 {
 				return "", false
 			}
 			result += "."
+		case '*':
+			// we had already started a group, now it's ended too early
+			if placed > 0 {
+				return "", false
+			}
+			// skip over already-placed springs
+			result += "*"
 		case '#', '?':
 			// start or continue a group
-			foundGroup++
-			result += "#"
+			placed++
+			result += "*"
 		}
 
 		// we placed the expected group, stop looking
-		if foundGroup == expect {
+		if placed == expect {
 			break
 		}
 	}
 
 	// we reached the end without placing the expected group
-	if foundGroup != expect {
+	if placed != expect {
 		return "", false
 	}
 
@@ -157,8 +157,8 @@ func place(input string, expect int) (string, bool) {
 		switch input[i] {
 		case '.':
 			// we already have a gap, do nothing
-		case '#':
-			// we hit a spring when we wanted a gap, we failed
+		case '#', '*':
+			// we hit a spring when we needed a gap, we failed
 			return "", false
 		case '?':
 			// convert to a gap and advance the input

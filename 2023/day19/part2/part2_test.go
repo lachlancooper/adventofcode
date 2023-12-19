@@ -1,0 +1,29 @@
+package main
+
+import (
+	"bufio"
+	"os"
+	"testing"
+)
+
+func Test_solve(t *testing.T) {
+	tests := map[string]struct {
+		scanner *bufio.Scanner
+		want    int
+	}{
+		"example": {want: 167_409_079_868_000},
+		"input":   {want: 124_615_747_767_410},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			file, err := os.Open("testdata/" + name)
+			if err != nil {
+				t.Errorf("unable to open file %s", name)
+			}
+			scanner := bufio.NewScanner(file)
+			if got := solve(scanner); got != tt.want {
+				t.Errorf("solve() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

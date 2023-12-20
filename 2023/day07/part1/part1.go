@@ -88,46 +88,36 @@ func winnings(scanner *bufio.Scanner) int {
 // strength calculates the strength of a hand of cards.
 func strength(cards string) handStrength {
 	cardCounts := make(map[rune]int)
-
 	for _, c := range cards {
 		cardCounts[c]++
 	}
 
-	seenTwo := false
-	seenThree := false
+	counts := []int{}
+	for _, val := range cardCounts {
+		counts = append(counts, val)
+	}
 
-	for _, v := range cardCounts {
-		switch v {
-		case 1:
-		case 2:
-			switch {
-			case seenTwo:
-				return twoPair
-			case seenThree:
-				return fullHouse
-			}
-			seenTwo = true
-		case 3:
-			switch {
-			case seenTwo:
-				return fullHouse
-			}
-			seenThree = true
-		case 4:
-			return fourOfAKind
-		case 5:
-			return fiveOfAKind
+	slices.Sort(counts)
+	slices.Reverse(counts)
+
+	switch counts[0] {
+	case 5:
+		return fiveOfAKind
+	case 4:
+		return fourOfAKind
+	case 3:
+		if counts[1] == 2 {
+			return fullHouse
 		}
-	}
-
-	switch {
-	case seenTwo:
-		return onePair
-	case seenThree:
 		return threeOfAKind
+	case 2:
+		if counts[1] == 2 {
+			return twoPair
+		}
+		return onePair
+	default:
+		return highCard
 	}
-
-	return highCard
 }
 
 // cmpHands returns a negative number when a < b, or a positive number when a > b.
